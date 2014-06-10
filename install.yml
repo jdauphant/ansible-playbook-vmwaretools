@@ -1,0 +1,28 @@
+ - hosts: all
+   tasks: 
+     - name: Ensure 7z is present
+       local_action: apt pkg=p7zip-full
+     - name: Extract ISO
+       local_action: "command 7z x {{item}} -o/tmp"
+       with_first_found:
+         - "~/linux.iso"
+         - /usr/lib/vmware/isoimages/linux.iso
+     - name: Extract VMwareTools
+       unarchive: dest=/tmp src="{{item}}"
+       with_fileglob:
+         - /tmp/VMwareTools*.tar.gz
+     - name: Launch VMwareTools installation
+       command: /tmp/vmware-tools-distrib/vmware-install.pl -d
+     - name: Clean extracted folder
+       file: path={{item}} state=absent
+       with_items:
+         - /tmp/vmware-tools-distrib
+         - "~/linux.iso"
+     - name: Clean extracted folder
+       local_action: file path={{item}} state=absent
+       with_fileglob:
+         - /tmp/VMwareTools*.tar.gz
+         - /tmp/manifest.txt
+         - /tmp/vmware-tools*
+         - /tmp/run_upgrader.sh
+     
