@@ -3,12 +3,16 @@
      - name: Ensure 7z is present
        local_action: apt pkg=p7zip-full state=present
      - name: Extract ISO
-       local_action: "command 7z x {{item}} -o/tmp"
+       local_action: "command 7z -y x {{item}} -o/tmp"
        with_first_found:
          - "~/linux.iso"
          - /usr/lib/vmware/isoimages/linux.iso
      - name: Ensure needed packages are present
        apt: pkg=build-essential,linux-headers-amd64 state=present
+       when: ansible_distribution == "Debian"
+     - name: Ensure needed packages are present
+       apt: pkg=build-essential,linux-headers-generic state=present  
+       when: ansible_distribution == "Ubuntu" 
      - name: Extract VMwareTools
        unarchive: dest=/tmp src="{{item}}"
        with_fileglob:
